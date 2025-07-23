@@ -9,7 +9,17 @@
 
   <title>Femto ONN 1D grating calculator</title>
   <style>
-    .input-row {
+    
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+    }
+
+    .left-panel, .right-panel {  
+    }
+
+    .input-subgroup {
       display: grid;
       grid-template-columns: 20px 0.3fr;
       align-items: center;
@@ -32,50 +42,77 @@
 </head>
 <body>
   <h1>Femto CNN 1D-phase grating calculator</h1>
-  <h3>Useful formulas</h3>
-  <p>\( \text{Phase: } \Delta\phi \cdot \sin(2\pi f x) \)</p>
-  <p>\(\Delta\phi: \frac{2\pi}{\lambda}OPL_{max}\)</p>
-  <p>\(f = \frac{1}{\Lambda}\)</p>
+  <div class="container">  
+
+    <div class="left-panel">
+      <p>\( \text{Phase = } \Delta\phi \cdot \sin(2\pi f x) \)</p>
+      <p>\(\Delta\phi: \frac{2\pi}{\lambda}OPL_{max}\)</p>
+      <p>\(f = \frac{1}{\Lambda}\)</p>
+      <p>\(Cycles = f*x \quad or \quad \frac{x}{\Lambda}\)</p>
+      <div class="input-subgroup">
+        <label for="dphi">\(\Delta\phi:\)</label>
+        <input id="dphi" type="number" step="any" placeholder="Enter Δφ" oninput="lastChanged='delta_phi'; update_left()">
+      </div>
+
+      <div class="input-subgroup">
+        <label for="f">\(f:\)</label>
+        <input id="f" type="number" step="any" placeholder="Enter frequency (Hz)" oninput="lastChanged='f'; update_left()">
+      </div>
+
+      <div class="input-subgroup">
+        <label for="x">\(x:\)</label>
+        <input id="x" type="number" step="any" placeholder="Enter x (pixels)" oninput="lastChanged='x'; update_left()">
+      </div>
+
+      <div class="input-subgroup">
+        <label for="period">\(\Lambda:\)</label>
+        <input id="period" type="number" step="any" placeholder="Enter grating period" oninput="lastChanged='period'; update_left()">
+      </div>
+
+      <div class="input-subgroup">
+        <label for="cycles">\(cycles:\)</label>
+        <input id="cycles" type="number" step="any" placeholder="Enter number of cycles" oninput="lastChanged='cycles'; update_left()">
+      </div>
+
+      <p id="phase">Phase: </p>
+
+    </div>
+
+    <div class="right-panel">
+      <h3>Diffraction Angle Estimation</h3>
+      <p>\(sin\theta_m = \frac {m\lambda}{\Lambda}\)</p>
+      <div class="input-subgroup">
+        <label for="wavelength">\(\lambda:\)</label>
+        <input id="wavelength" type="number" step="any" placeholder="Enter wavelength (nm)" oninput="lastChanged='wavelength'; update_right()">
+      </div>
+
+      <div class="input-subgroup">
+        <label for="order">\(m:\)</label>
+        <input id="order" type="number" step="any" placeholder="Enter order of diffraction" oninput="lastChanged='order'; update_right()">
+      </div>
+
+      <div class="input-subgroup">
+        <label for="period_angle">\(\Lambda:\)</label>
+        <input id="period_angle" type="number" step="any" placeholder="Enter grating period" oninput="lastChanged='period_angle'; update_right()">
+      </div>
+
+      <p id="theta">Diffraction Angle in radians: </p>
+      <p id="theta_deg">Diffraction Angle in degrees: </p>
+
+    </div>
+    </div>
   
-
-  <div class="input-row">
-  <label for="dphi">\(\Delta\phi:\)</label>
-  <input id="dphi" type="number" step="any" placeholder="Enter Δφ" oninput="lastChanged='delta_phi'; calculate()">
-  </div>
-
-  <div class="input-row">
-  <label for="f">\(f:\)</label>
-  <input id="f" type="number" step="any" placeholder="Enter frequency" oninput="lastChanged='f'; calculate()">
-  </div>
-
-  <div class="input-row">
-  <label for="x">\(x:\)</label>
-  <input id="x" type="number" step="any" placeholder="Enter x" oninput="lastChanged='x'; calculate()">
-  </div>
-
-  <div class="input-row">
-  <label for="period">\(\Lambda:\)</label>
-  <input id="period" type="number" step="any" placeholder="Enter grating period" oninput="lastChanged='period'; calculate()">
-  </div>
-
-  <div class="input-row">
-  <label for="cycles">\(cycles:\)</label>
-  <input id="cycles" type="number" step="any" placeholder="Enter number of cycles" oninput="lastChanged='cycles'; calculate()">
-  </div>
-
-  
-  <p id="phase">Phase: </p>
 
   <script>
     let lastChanged = null;
-    function calculate() {
+    function update_left() {
       let delta_phi = parseFloat(document.getElementById("dphi").value);
       let f = parseFloat(document.getElementById("f").value);
       const x = parseFloat(document.getElementById("x").value);
       let period = parseFloat(document.getElementById("period").value);
       let cycles = parseInt(document.getElementById("cycles").value);
 
-       // 🔄 Only convert if user updated the other field
+       // For simultaneous update
       if (lastChanged === "f" && !isNaN(f)) {
         period = 1 / f;
         document.getElementById("period").value = period.toFixed(5);
@@ -92,7 +129,15 @@
         document.getElementById("cycles").value = cycles.toFixed(5);
       } else if (lastChanged === "cycles" && !isNaN(cycles) && !isNaN(x)) {
         f = cycles / x;
+        period = 1 / f;
         document.getElementById("f").value = f.toFixed(5);
+        document.getElementById("period").value = period.toFixed(5);
+      }
+      else if (lastChanged === "x" && !isNaN(cycles) && !isNaN(x)) {
+        f = cycles / x;
+        period = 1 / f;
+        document.getElementById("f").value = f.toFixed(5);
+        document.getElementById("period").value = period.toFixed(5);
       }
 
       if (isNaN(delta_phi) || isNaN(f) || isNaN(x) || isNaN(period) || isNaN(cycles)) {
@@ -102,6 +147,30 @@
 
       const phase = delta_phi * Math.sin(2 * Math.PI * f * x);
       document.getElementById("phase").innerText = "Phase = " + phase.toFixed(20);
+    }
+
+    function update_right(){
+      const wavelength = parseFloat(document.getElementById("wavelength").value);
+      const order = parseInt(document.getElementById("order").value);
+      const period_angle = parseFloat(document.getElementById("period_angle").value);
+
+      if (isNaN(wavelength) || isNaN(order) || isNaN(period_angle)) {
+        document.getElementById("theta").innerText = "Diffraction Angle in radians: ";
+        document.getElementById("theta_deg").innerText = "Diffraction Angle in degrees: ";
+        return;
+      }
+      const ratio = (order* wavelength) / period_angle;
+
+      // Ensure the ratio is in valid range for arcsin
+      if (Math.abs(ratio) > 1) {
+        angleElem.innerText = "θ = undefined (|mλ/Λ| > 1)";
+        return;
+      }
+      const theta = Math.asin(ratio);
+      const theta_deg = theta * (180 / Math.PI);
+
+      document.getElementById("theta").innerText = "Diffraction Angle in radians= " + theta.toFixed(20);
+      document.getElementById("theta_deg").innerText = "Diffraction Angle in degrees= " + theta_deg.toFixed(20);
     }
   </script>
 </body>
