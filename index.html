@@ -163,7 +163,7 @@
       const wavelength = parseFloat(document.getElementById("wavelength").value);
       const order = parseInt(document.getElementById("order").value);
       const period_2 = parseFloat(document.getElementById("period_2").value);
-      const incident_angle = parseInt(document.getElementById("incident_angle").value);
+      const incident_angle = parseFloat(document.getElementById("incident_angle").value);
 
       if (isNaN(wavelength) || isNaN(order) || isNaN(period_2)) {
         document.getElementById("theta").innerText = "Diffraction Angle in radians: ";
