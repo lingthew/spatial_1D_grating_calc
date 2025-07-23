@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
   <title>Femto ONN 1D grating calculator</title>
   <style>
+    .input-row {
+      display: grid;
+      grid-template-columns: 20px 0.3fr;
+      align-items: center;
+      gap: 50px;
+      margin-bottom: 10px;
+    }
     body {
       font-family: sans-serif;
       padding: 20px;
     }
-    input, button {
+    input {
       padding: 10px;
       margin: 5px;
     }
@@ -18,16 +31,77 @@
   </style>
 </head>
 <body>
-  <h2>Equation: y = 2x + 1</h2>
-  <input id="x" type="number" placeholder="Enter x">
-  <button onclick="calculate()">Calculate</button>
-  <p id="result">Result: </p>
+  <h1>Femto CNN 1D-phase grating calculator</h1>
+  <h3>Useful formulas</h3>
+  <p>\( \text{Phase: } \Delta\phi \cdot \sin(2\pi f x) \)</p>
+  <p>\(\Delta\phi: \frac{2\pi}{\lambda}OPL_{max}\)</p>
+  <p>\(f = \frac{1}{\Lambda}\)</p>
+  
+
+  <div class="input-row">
+  <label for="dphi">\(\Delta\phi:\)</label>
+  <input id="dphi" type="number" step="any" placeholder="Enter Δφ" oninput="lastChanged='delta_phi'; calculate()">
+  </div>
+
+  <div class="input-row">
+  <label for="f">\(f:\)</label>
+  <input id="f" type="number" step="any" placeholder="Enter frequency" oninput="lastChanged='f'; calculate()">
+  </div>
+
+  <div class="input-row">
+  <label for="x">\(x:\)</label>
+  <input id="x" type="number" step="any" placeholder="Enter x" oninput="lastChanged='x'; calculate()">
+  </div>
+
+  <div class="input-row">
+  <label for="period">\(\Lambda:\)</label>
+  <input id="period" type="number" step="any" placeholder="Enter grating period" oninput="lastChanged='period'; calculate()">
+  </div>
+
+  <div class="input-row">
+  <label for="cycles">\(cycles:\)</label>
+  <input id="cycles" type="number" step="any" placeholder="Enter number of cycles" oninput="lastChanged='cycles'; calculate()">
+  </div>
+
+  
+  <p id="phase">Phase: </p>
 
   <script>
+    let lastChanged = null;
     function calculate() {
+      let delta_phi = parseFloat(document.getElementById("dphi").value);
+      let f = parseFloat(document.getElementById("f").value);
       const x = parseFloat(document.getElementById("x").value);
-      const y = 2 * x + 1;
-      document.getElementById("result").innerText = "Result: " + y;
+      let period = parseFloat(document.getElementById("period").value);
+      let cycles = parseInt(document.getElementById("cycles").value);
+
+       // 🔄 Only convert if user updated the other field
+      if (lastChanged === "f" && !isNaN(f)) {
+        period = 1 / f;
+        document.getElementById("period").value = period.toFixed(5);
+      } else if (lastChanged === "period" && !isNaN(period)) {
+        f = 1 / period;
+        document.getElementById("f").value = f.toFixed(5);
+      }
+
+      if (lastChanged === "f" && !isNaN(f) && !isNaN(x)) {
+        cycles = x * f;
+        document.getElementById("cycles").value = cycles.toFixed(5);
+      } else if (lastChanged === "x" && !isNaN(x) && !isNaN(f)) {
+        cycles = x * f;
+        document.getElementById("cycles").value = cycles.toFixed(5);
+      } else if (lastChanged === "cycles" && !isNaN(cycles) && !isNaN(x)) {
+        f = cycles / x;
+        document.getElementById("f").value = f.toFixed(5);
+      }
+
+      if (isNaN(delta_phi) || isNaN(f) || isNaN(x) || isNaN(period) || isNaN(cycles)) {
+        document.getElementById("phase").innerText = "phase: ";
+        return;
+      }
+
+      const phase = delta_phi * Math.sin(2 * Math.PI * f * x);
+      document.getElementById("phase").innerText = "Phase = " + phase.toFixed(20);
     }
   </script>
 </body>
